@@ -166,11 +166,11 @@ const advancedTools: ToolDef[] = [
   {
     name: "evaluate_js",
     description:
-      "Execute JavaScript in the page context. Returns JSON-serializable values only.",
+      "Execute JavaScript in the page context. Returns JSON-serializable values only. WARNING: runs arbitrary code.",
     schema: Javascript.EvaluateJsInput,
     handler: (a) => Javascript.evaluateJsHandler(cdp, a),
     readOnly: false,
-    destructive: false,
+    destructive: true,
   },
   {
     name: "get_cookies",
