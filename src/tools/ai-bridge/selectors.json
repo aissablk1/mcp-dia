@@ -1,0 +1,26 @@
+{
+  "versions": {
+    "default": {
+      "chat": {
+        "container": "[data-testid='chat-panel'], [aria-label='Chat'], [class*='ChatPanel'], [class*='chat-panel']",
+        "input": "[data-testid='chat-input'] textarea, [aria-label='Chat input'] textarea, [class*='ChatInput'] textarea, [class*='chat-input'] textarea",
+        "sendButton": "[data-testid='chat-send'], [aria-label='Send'], [class*='SendButton']",
+        "messages": "[data-testid='chat-messages'] [data-testid='message'], [class*='ChatMessage'], [class*='chat-message']",
+        "messageContent": "[data-testid='message-content'], [class*='MessageContent'], [class*='message-content']",
+        "messageRole": "[data-testid='message-role'], [class*='MessageRole']"
+      },
+      "skills": {
+        "panel": "[data-testid='skills-panel'], [aria-label='Skills'], [class*='SkillsPanel'], [class*='skills-panel']",
+        "list": "[data-testid='skill-item'], [class*='SkillItem'], [class*='skill-item']",
+        "name": "[data-testid='skill-name'], [class*='SkillName'], [class*='skill-name']",
+        "trigger": "[data-testid='skill-trigger'], [class*='SkillTrigger']"
+      },
+      "memory": {
+        "searchInput": "[data-testid='search-memory-input'], [aria-label='Search memory'], [class*='SearchMemory'] input",
+        "results": "[data-testid='search-result'], [class*='SearchResult'], [class*='search-result']",
+        "resultTitle": "[data-testid='result-title'], [class*='ResultTitle']",
+        "resultSnippet": "[data-testid='result-snippet'], [class*='ResultSnippet']"
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+================================================================================
+
+    ╔╦╗╔═╗╔═╗   ╔╦╗╦╔═╗
+    ║║║║  ╠═╝    ║║║╠═╣
+    ╩ ╩╚═╝╩    ═╩╝╩╩ ╩
+
+              mcp-dia  ·  v0.1.0
+
+================================================================================
+
+  Project ............ mcp-dia
+  Tagline ............ MCP server for Dia Browser via Chrome DevTools Protocol
+  Author ............. Aïssa BELKOUSSA
+  Contact ............ contact@aissabelkoussa.fr
+  Repository ......... https://github.com/aissabelkoussa/mcp-dia
+  License ............ MIT
+  Created ............ 2026-05-26
+  Updated ............ 2026-05-27
+  Version ............ 0.1.0
+  Status ............. alpha
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ DESCRIPTION ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  Serveur MCP (Model Context Protocol) de référence pour Dia Browser
+  (The Browser Company). Expose 24 outils répartis en 3 couches :
+  Core (tabs, navigation, contenu), Advanced (screenshots, DOM, cookies,
+  réseau, PDF) et AI Bridge (chat, skills, search memory). Permet à tout
+  agent IA compatible MCP de piloter Dia via CDP.
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ STACK ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  Runtime ............ Node.js 20+
+  Language ........... TypeScript 5.7
+  Protocol ........... MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+  Transport .......... stdio (défaut), compatible Claude Desktop / Claude Code
+  CDP ................ chrome-remote-interface 0.33
+  Validation ......... Zod 3.24
+  Tests .............. Vitest 3.x
+  CI/CD .............. GitHub Actions
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ STRUCTURE ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  ./
+  ├── src/
+  │   ├── index.ts                 entry point, MCP server setup
+  │   ├── cdp/                     CDP connection manager + helpers
+  │   ├── tools/
+  │   │   ├── core/                tabs, navigation, content (9 outils)
+  │   │   ├── advanced/            screenshot, DOM, cookies, network (9 outils)
+  │   │   ├── ai-bridge/           chat, skills, memory (6 outils)
+  │   │   └── output-schemas.ts    Zod schemas pour outputSchema MCP
+  │   └── utils/                   config, errors, logger
+  ├── tests/                       tests Vitest (schemas + handlers)
+  ├── docs/                        spec et documentation
+  ├── dist/                        build compilé
+  ├── PROJECT.nfo                  ce fichier
+  └── README.md                    documentation principale
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ INSTALL ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  Prérequis : lancer Dia avec le flag CDP :
+  $ open -a "Dia" --args --remote-debugging-port=9222
+
+  Zero-install (npx) :
+  $ npx mcp-dia
+
+  Installation globale :
+  $ npm install -g mcp-dia
+  $ mcp-dia
+
+  Configuration Claude Desktop (~/Library/Application Support/Claude/) :
+  {
+    "mcpServers": {
+      "dia-browser": {
+        "command": "npx",
+        "args": ["mcp-dia"]
+      }
+    }
+  }
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ USAGE ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  $ npm run dev              lance le serveur en dev (tsx)
+  $ npm run build            compile TypeScript vers dist/
+  $ npm test                 lance la suite de tests Vitest
+  $ npm run typecheck        vérification des types sans compilation
+  $ npm run inspect          MCP Inspector pour debug interactif
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ ENV ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  Variables d'environnement (toutes optionnelles) :
+  - DIA_CDP_PORT              Port CDP de Dia (défaut : 9222)
+  - DIA_CDP_HOST              Host CDP (défaut : localhost)
+  - DIA_AI_BRIDGE             Active/désactive AI Bridge (défaut : true)
+  - DIA_LOG_LEVEL             Niveau de log (défaut : info)
+  - DIA_RECONNECT_MAX         Délai max reconnexion en ms (défaut : 30000)
+
+────────────────────────────────────────────────────────────────────────────────
+  ▓▓ CONTACT ▓▓
+────────────────────────────────────────────────────────────────────────────────
+
+  Aïssa BELKOUSSA
+  contact@aissabelkoussa.fr
+
+================================================================================
+                    Copyright (c) 2026 Aïssa BELKOUSSA
+                              Licence MIT
+================================================================================

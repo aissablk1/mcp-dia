@@ -1,0 +1,48 @@
+{
+  "name": "mcp-dia",
+  "version": "0.1.0",
+  "description": "MCP server for Dia Browser — control tabs, automate pages, and interact with Dia's built-in AI via Chrome DevTools Protocol",
+  "author": "Aïssa BELKOUSSA",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mcp-dia": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && cp src/tools/ai-bridge/selectors.json dist/tools/ai-bridge/selectors.json",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "inspect": "npx -y @modelcontextprotocol/inspector node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "chrome-remote-interface": "^0.33.2",
+    "zod": "^3.24.0",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/chrome-remote-interface": "^0.34.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "dia",
+    "browser",
+    "cdp",
+    "automation",
+    "ai"
+  ]
+}
