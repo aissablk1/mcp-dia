@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { CDPConnection } from "../../cdp/connection.js";
 import type { ChatMessage } from "../../cdp/types.js";
-import { loadSelectors, findElement } from "./detect.js";
+import { AIBridgeError } from "../../utils/errors.js";
+import { loadSelectors, findElement, waitForNewMessage } from "./detect.js";
 
 export const DiaSendChatInput = z.object({
   message: z.string().min(1),
@@ -16,7 +17,6 @@ export async function diaSendChatHandler(
   const client = await cdp.getActiveTab();
   const sel = loadSelectors();
 
-  // Enable DOM/Runtime if not already enabled
   await client.Runtime.enable();
 
   // Try to find the input; if not found, try opening chat via Cmd+E
@@ -34,13 +34,12 @@ export async function diaSendChatHandler(
       key: "e",
       code: "KeyE",
     });
-    // Wait briefly for panel to open
     await new Promise((r) => setTimeout(r, 500));
     inputSelector = await findElement(client, sel.chat.input);
   }
 
   if (!inputSelector) {
-    throw new Error("AI Bridge: Chat input not found — is Dia's chat panel open?");
+    throw new AIBridgeError("Chat input not found — is Dia's chat panel open?");
   }
 
   // Focus and type the message
@@ -80,36 +79,20 @@ export async function diaSendChatHandler(
 
   if (!args.waitForResponse) return {};
 
-  // Poll for response
-  const deadline = Date.now() + args.timeout;
-  let lastCount = 0;
-
-  // Get initial message count
   const countResult = await client.Runtime.evaluate({
     expression: `document.querySelectorAll(${JSON.stringify(sel.chat.messages)}).length`,
     returnByValue: true,
   });
-  lastCount = countResult.result?.value ?? 0;
+  const lastCount = countResult.result?.value ?? 0;
 
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 1000));
-    const result = await client.Runtime.evaluate({
-      expression: `(function(){
-        var msgs = document.querySelectorAll(${JSON.stringify(sel.chat.messages)});
-        if (msgs.length <= ${lastCount}) return null;
-        var last = msgs[msgs.length - 1];
-        var contentEl = last.querySelector(${JSON.stringify(sel.chat.messageContent)});
-        return contentEl ? contentEl.textContent : last.textContent;
-      })()`,
-      returnByValue: true,
-    });
-    const text = result.result?.value;
-    if (text && typeof text === "string" && text.trim().length > 0) {
-      return { response: text.trim() };
-    }
-  }
-
-  return {};
+  const response = await waitForNewMessage(
+    client,
+    sel.chat.messages,
+    sel.chat.messageContent,
+    lastCount,
+    args.timeout
+  );
+  return response ? { response } : {};
 }
 
 export const DiaGetChatHistoryInput = z.object({
@@ -119,7 +102,7 @@ export const DiaGetChatHistoryInput = z.object({
 export async function diaGetChatHistoryHandler(
   cdp: CDPConnection,
   args: z.infer<typeof DiaGetChatHistoryInput>
-): Promise<ChatMessage[]> {
+): Promise<{ messages: ChatMessage[] }> {
   const client = await cdp.getActiveTab();
   const sel = loadSelectors();
 
@@ -142,7 +125,13 @@ export async function diaGetChatHistoryHandler(
     awaitPromise: false,
   });
 
+  if (result.exceptionDetails) {
+    throw new AIBridgeError(
+      result.exceptionDetails.exception?.description ?? "Failed to read chat history"
+    );
+  }
+
   const messages = result.result?.value;
-  if (!Array.isArray(messages)) return [];
-  return messages as ChatMessage[];
+  if (!Array.isArray(messages)) return { messages: [] };
+  return { messages: messages as ChatMessage[] };
 }

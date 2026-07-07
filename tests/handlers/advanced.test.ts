@@ -129,7 +129,7 @@ describe("evaluateJsHandler", () => {
 describe("getCookiesHandler", () => {
   it("returns empty array when no cookies", async () => {
     const result = await getCookiesHandler(cdp, {});
-    expect(result).toEqual([]);
+    expect(result.cookies).toEqual([]);
   });
 
   it("filters by URL when provided", async () => {
@@ -137,8 +137,10 @@ describe("getCookiesHandler", () => {
       cookies: [{ name: "session", value: "abc", domain: ".example.com", path: "/", secure: true, httpOnly: true, expires: 0 }],
     });
     const result = await getCookiesHandler(cdp, { url: "https://example.com" });
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("session");
+    expect(result.cookies).toHaveLength(1);
+    expect(result.cookies[0].name).toBe("session");
+    // HttpOnly cookie value is redacted by default (§38 — no session exfiltration)
+    expect(result.cookies[0].value).toBe("[redacted: HttpOnly]");
     expect(client.Network.getCookies).toHaveBeenCalledWith({ urls: ["https://example.com"] });
   });
 });

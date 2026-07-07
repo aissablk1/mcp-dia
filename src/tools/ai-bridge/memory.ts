@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { CDPConnection } from "../../cdp/connection.js";
 import type { MemoryResult, TabContext } from "../../cdp/types.js";
 import { withTab } from "../../cdp/helpers.js";
+import { AIBridgeError } from "../../utils/errors.js";
 import { loadSelectors } from "./detect.js";
 
 export const DiaSearchMemoryInput = z.object({
@@ -11,7 +12,7 @@ export const DiaSearchMemoryInput = z.object({
 export async function diaSearchMemoryHandler(
   cdp: CDPConnection,
   args: z.infer<typeof DiaSearchMemoryInput>
-): Promise<MemoryResult[]> {
+): Promise<{ results: MemoryResult[] }> {
   const client = await cdp.getActiveTab();
   const sel = loadSelectors();
 
@@ -35,7 +36,6 @@ export async function diaSearchMemoryHandler(
     awaitPromise: false,
   });
 
-  // Wait for results
   await new Promise((r) => setTimeout(r, 2000));
 
   const result = await client.Runtime.evaluate({
@@ -56,9 +56,15 @@ export async function diaSearchMemoryHandler(
     awaitPromise: false,
   });
 
+  if (result.exceptionDetails) {
+    throw new AIBridgeError(
+      result.exceptionDetails.exception?.description ?? "Failed to search memory"
+    );
+  }
+
   const results = result.result?.value;
-  if (!Array.isArray(results)) return [];
-  return results as MemoryResult[];
+  if (!Array.isArray(results)) return { results: [] };
+  return { results: results as MemoryResult[] };
 }
 
 export const DiaGetTabContextInput = z.object({
@@ -103,17 +109,24 @@ export async function diaGetTabContextHandler(
       awaitPromise: false,
     });
 
-    const val = result.result?.value as { url: string; title: string; metadata: Record<string, unknown> } | undefined;
-    if (!val) throw new Error("AI Bridge: Failed to extract tab context");
+    if (result.exceptionDetails) {
+      throw new AIBridgeError(
+        result.exceptionDetails.exception?.description ?? "Failed to extract tab context"
+      );
+    }
 
-    // Clean up undefined metadata values
+    const val = result.result?.value as
+      | { url: string; title: string; metadata: Record<string, unknown> }
+      | undefined;
+    if (!val) throw new AIBridgeError("Failed to extract tab context");
+
     const metadata: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(val.metadata)) {
       if (v !== undefined && v !== null) metadata[k] = v;
     }
 
     return {
-      tabId: args.tabId ?? "active",
+      ...(args.tabId ? { tabId: args.tabId } : {}),
       url: val.url,
       title: val.title,
       metadata,

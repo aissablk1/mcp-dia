@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { CDPConnection } from "../../cdp/connection.js";
 import { withTab } from "../../cdp/helpers.js";
+import { ToolError } from "../../utils/errors.js";
 
 export const ScreenshotInput = z.object({
   tabId: z.string().optional(),
@@ -22,6 +23,12 @@ export async function screenshotHandler(
         returnByValue: true,
         awaitPromise: true,
       });
+      if (result.exceptionDetails) {
+        throw new ToolError(
+          "screenshot",
+          result.exceptionDetails.exception?.description ?? `Selector not found: ${args.selector}`
+        );
+      }
       const rect = result.result?.value;
       if (rect) clip = { ...rect, scale: 1 };
     } else if (args.fullPage) {

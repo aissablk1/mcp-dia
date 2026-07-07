@@ -15,6 +15,7 @@ export class CDPConnection extends EventEmitter {
   private config: CDPConfig;
   private connected = false;
   private reconnecting = false;
+  private stopped = false;
 
   private constructor(config: CDPConfig) {
     super();
@@ -28,41 +29,53 @@ export class CDPConnection extends EventEmitter {
     return CDPConnection.instance;
   }
 
-  static resetInstance(): void {
-    CDPConnection.instance?.disconnect();
-    CDPConnection.instance = null;
+  static async resetInstance(): Promise<void> {
+    if (CDPConnection.instance) {
+      await CDPConnection.instance.disconnect();
+      CDPConnection.instance = null;
+    }
   }
 
   async connect(): Promise<void> {
+    this.stopped = false;
     try {
       this.client = await CDP({ host: this.config.host, port: this.config.port });
       this.connected = true;
-      this.client.on("disconnect", () => this.handleDisconnect());
+      this.client.on("disconnect", () => {
+        this.handleDisconnect().catch(() => {});
+      });
       this.emit("connected");
     } catch {
       throw new CDPError(
         `Failed to connect to Dia at ${this.config.host}:${this.config.port}. ` +
-        `Launch Dia with: open -a "Dia" --args --remote-debugging-port=${this.config.port}`,
+          `Launch Dia with: open -a "Dia" --args --remote-debugging-port=${this.config.port}`,
         "CONNECTION_FAILED"
       );
     }
   }
 
   async disconnect(): Promise<void> {
+    // Signal the reconnect loop to stop before tearing the socket down, so the
+    // "disconnect" event our own close() triggers does not restart reconnection.
+    this.stopped = true;
     if (this.client) {
-      try { await this.client.close(); } catch {}
+      try {
+        await this.client.close();
+      } catch {}
       this.client = null;
     }
     this.connected = false;
   }
 
-  isConnected(): boolean { return this.connected; }
+  isConnected(): boolean {
+    return this.connected;
+  }
 
   async listTargets(): Promise<Tab[]> {
     const targets = await CDP.List({ host: this.config.host, port: this.config.port });
     return targets
       .filter((t) => t.type === "page")
-      .map((t) => ({ id: t.id, url: t.url, title: t.title, active: false }));
+      .map((t) => ({ id: t.id, url: t.url, title: t.title }));
   }
 
   async attachToTab(tabId: string): Promise<CDP.Client> {
@@ -73,22 +86,29 @@ export class CDPConnection extends EventEmitter {
   }
 
   async getActiveTab(): Promise<CDP.Client> {
-    if (!this.client) throw new CDPError("Not connected to Dia", "NOT_CONNECTED");
+    if (!this.client || !this.connected) {
+      throw new CDPError("Not connected to Dia", "NOT_CONNECTED");
+    }
     return this.client;
   }
 
   private async handleDisconnect(): Promise<void> {
     this.connected = false;
+    this.client = null;
     this.emit("disconnected");
-    if (!this.reconnecting) await this.attemptReconnect();
+    if (!this.reconnecting && !this.stopped) await this.attemptReconnect();
   }
 
   private async attemptReconnect(): Promise<void> {
     this.reconnecting = true;
-    let delay = 1000;
-    while (!this.connected && delay <= this.config.reconnectMax) {
+    // `reconnectMax` is a cap on the backoff DELAY (not a number of attempts):
+    // reconnection is retried indefinitely with capped exponential backoff
+    // until it succeeds or the connection is explicitly stopped.
+    let delay = Math.min(1000, this.config.reconnectMax);
+    while (!this.connected && !this.stopped) {
       this.emit("reconnecting", { delay });
       await new Promise((r) => setTimeout(r, delay));
+      if (this.stopped) break;
       try {
         await this.connect();
         this.reconnecting = false;
@@ -99,6 +119,5 @@ export class CDPConnection extends EventEmitter {
       }
     }
     this.reconnecting = false;
-    this.emit("reconnect_failed");
   }
 }

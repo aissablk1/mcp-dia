@@ -5,9 +5,10 @@ MCP server for **Dia Browser** — control tabs, automate pages, and interact wi
 ## Features
 
 - **24 tools** across 3 layers: Core (tabs, navigation, content), Advanced (screenshots, DOM, cookies, network, PDF), AI Bridge (chat, skills, memory)
-- **Auto-reconnect** CDP connection with exponential backoff
+- **Auto-reconnect** CDP connection with capped exponential backoff
 - **AI Bridge** (experimental) — interact with Dia's built-in AI: send chat messages, trigger Skills, query Search memory
 - **Feature-flagged** — disable AI Bridge with `DIA_AI_BRIDGE=false` for a stable CDP-only server
+- **Hardened by default** — URL scheme allow-list, HttpOnly cookie redaction, per-tool timeouts, honest `destructive` annotations
 
 ## Quick Start
 
@@ -43,10 +44,10 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 | Tool | Description |
 |------|-------------|
 | `list_tabs` | List all open tabs |
-| `open_tab` | Open a new tab |
+| `open_tab` | Open a new tab (http(s) only) |
 | `close_tab` | Close a tab |
 | `switch_tab` | Focus a tab |
-| `navigate` | Go to a URL |
+| `navigate` | Go to an http(s) URL |
 | `go_back` | Previous page |
 | `go_forward` | Next page |
 | `reload_tab` | Reload page |
@@ -61,10 +62,10 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 | `click_element` | Click by CSS/XPath selector |
 | `fill_input` | Fill form fields |
 | `wait_for_selector` | Wait for DOM element |
-| `evaluate_js` | Run JavaScript |
-| `get_cookies` | Read cookies |
+| `evaluate_js` | Run JavaScript (with timeout) |
+| `get_cookies` | Read cookies (HttpOnly values redacted by default) |
 | `set_cookie` | Write cookies |
-| `intercept_network` | Log/block requests |
+| `intercept_network` | Log/block requests for a bounded window |
 
 ### AI Bridge (experimental)
 
@@ -83,15 +84,20 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 |---|---|---|
 | `DIA_CDP_PORT` | `9222` | CDP port |
 | `DIA_CDP_HOST` | `localhost` | CDP host |
-| `DIA_AI_BRIDGE` | `true` | Enable AI Bridge tools |
-| `DIA_LOG_LEVEL` | `info` | Log level |
-| `DIA_RECONNECT_MAX` | `30000` | Max reconnect delay (ms) |
+| `DIA_AI_BRIDGE` | `true` | Enable AI Bridge tools (`false` to disable) |
+| `DIA_LOG_LEVEL` | `info` | Log level (`debug`/`info`/`warn`/`error`) |
+| `DIA_RECONNECT_MAX` | `30000` | Max reconnect backoff delay (ms) |
+
+Invalid values fall back to their default rather than failing silently.
 
 ## Security
 
-- CDP is only accessible on `localhost`
-- `evaluate_js` executes arbitrary JavaScript in page context — use with trusted AI models only
-- Cookies and credentials are never logged
+- **URL allow-list** — `navigate` and `open_tab` accept only `http(s)` URLs and `about:blank`. Schemes such as `file:`, `javascript:`, `data:`, `chrome:` and `view-source:` are rejected, preventing local-file disclosure and access to internal browser pages — including when the agent is steered by indirect prompt injection from page content it has read.
+- **HttpOnly cookies redacted** — `get_cookies` redacts HttpOnly cookie values by default (CDP bypasses HttpOnly). Pass `revealValues: true` to opt in when you genuinely need them.
+- **Loopback by default, not enforced** — the CDP connection defaults to `localhost`. `DIA_CDP_HOST` can override it; only point it at a trusted, private host. The debug port grants full control of the browser session.
+- `evaluate_js` executes arbitrary JavaScript in the page context and is annotated `destructive` — use with trusted models only.
+- `click_element` and `dia_trigger_skill` are annotated `destructive` because the targeted action is arbitrary and may be irreversible.
+- Cookies and credentials are never written to logs.
 
 ## Requirements
 
@@ -101,4 +107,4 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 
 ## License
 
-MIT
+MIT © Aïssa BELKOUSSA

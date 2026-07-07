@@ -1,6 +1,6 @@
 {
   "name": "mcp-dia",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for Dia Browser — control tabs, automate pages, and interact with Dia's built-in AI via Chrome DevTools Protocol",
   "author": "Aïssa BELKOUSSA",
   "license": "MIT",
@@ -13,13 +13,22 @@
     "README.md",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aissablk1/mcp-dia.git"
+  },
+  "homepage": "https://github.com/aissablk1/mcp-dia#readme",
+  "bugs": {
+    "url": "https://github.com/aissablk1/mcp-dia/issues"
+  },
   "scripts": {
     "build": "tsc && cp src/tools/ai-bridge/selectors.json dist/tools/ai-bridge/selectors.json",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "inspect": "npx -y @modelcontextprotocol/inspector node dist/index.js"
+    "inspect": "npx -y @modelcontextprotocol/inspector node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

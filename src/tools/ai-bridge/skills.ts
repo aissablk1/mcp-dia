@@ -1,13 +1,14 @@
 import { z } from "zod";
 import type { CDPConnection } from "../../cdp/connection.js";
 import type { Skill } from "../../cdp/types.js";
-import { loadSelectors } from "./detect.js";
+import { AIBridgeError } from "../../utils/errors.js";
+import { loadSelectors, waitForNewMessage } from "./detect.js";
 
 export const DiaListSkillsInput = z.object({});
 
 export async function diaListSkillsHandler(
   cdp: CDPConnection
-): Promise<Skill[]> {
+): Promise<{ skills: Skill[] }> {
   const client = await cdp.getActiveTab();
   const sel = loadSelectors();
 
@@ -26,9 +27,15 @@ export async function diaListSkillsHandler(
     awaitPromise: false,
   });
 
+  if (result.exceptionDetails) {
+    throw new AIBridgeError(
+      result.exceptionDetails.exception?.description ?? "Failed to list skills"
+    );
+  }
+
   const skills = result.result?.value;
-  if (!Array.isArray(skills)) return [];
-  return skills as Skill[];
+  if (!Array.isArray(skills)) return { skills: [] };
+  return { skills: skills as Skill[] };
 }
 
 export const DiaTriggerSkillInput = z.object({
@@ -64,37 +71,27 @@ export async function diaTriggerSkillHandler(
     awaitPromise: false,
   });
 
+  if (clickResult.exceptionDetails) {
+    throw new AIBridgeError(
+      clickResult.exceptionDetails.exception?.description ?? "Failed to trigger skill"
+    );
+  }
   if (!clickResult.result?.value) {
-    throw new Error(`AI Bridge: Skill not found: ${args.skillName}`);
+    throw new AIBridgeError(`Skill not found: ${args.skillName}`);
   }
 
-  // Get initial message count before skill response
   const countResult = await client.Runtime.evaluate({
     expression: `document.querySelectorAll(${JSON.stringify(sel.chat.messages)}).length`,
     returnByValue: true,
   });
   const initialCount = countResult.result?.value ?? 0;
 
-  // Poll for new message (skill response)
-  const deadline = Date.now() + args.timeout;
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 1000));
-    const result = await client.Runtime.evaluate({
-      expression: `(function(){
-        var msgs = document.querySelectorAll(${JSON.stringify(sel.chat.messages)});
-        if (msgs.length <= ${initialCount}) return null;
-        var last = msgs[msgs.length - 1];
-        var contentEl = last.querySelector(${JSON.stringify(sel.chat.messageContent)});
-        return contentEl ? contentEl.textContent.trim() : last.textContent.trim();
-      })()`,
-      returnByValue: true,
-      awaitPromise: false,
-    });
-    const text = result.result?.value;
-    if (text && typeof text === "string" && text.trim().length > 0) {
-      return { response: text.trim() };
-    }
-  }
-
-  return { response: undefined };
+  const response = await waitForNewMessage(
+    client,
+    sel.chat.messages,
+    sel.chat.messageContent,
+    initialCount,
+    args.timeout
+  );
+  return { response };
 }

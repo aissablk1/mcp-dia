@@ -48,6 +48,11 @@ export function loadSelectors(diaVersion = "default"): SelectorSet {
   return sel;
 }
 
+/**
+ * Try each comma-separated selector in turn; return the first that matches an
+ * element in the page, or null. A malformed selector (page-side SyntaxError) is
+ * skipped rather than aborting the whole lookup.
+ */
 export async function findElement(
   client: CDP.Client,
   selectorList: string
@@ -58,22 +63,40 @@ export async function findElement(
       expression: `document.querySelector(${JSON.stringify(selector)}) !== null`,
       returnByValue: true,
     });
+    if (result.exceptionDetails) continue;
     if (result.result?.value === true) return selector;
   }
   return null;
 }
 
-export async function detectElement(
+/**
+ * Poll the page for a new chat message appended after `initialCount`, returning
+ * its trimmed text, or undefined on timeout. Shared by chat and skills polling.
+ */
+export async function waitForNewMessage(
   client: CDP.Client,
-  selector: string,
-  label: string
-): Promise<void> {
-  const found = await findElement(client, selector);
-  if (!found) throw new AIBridgeError(`${label} not found in the page`);
-}
-
-export async function healthCheck(client: CDP.Client): Promise<boolean> {
-  const sel = loadSelectors();
-  const found = await findElement(client, sel.chat.container);
-  return found !== null;
+  messagesSelector: string,
+  contentSelector: string,
+  initialCount: number,
+  timeoutMs: number
+): Promise<string | undefined> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 1000));
+    const result = await client.Runtime.evaluate({
+      expression: `(function(){
+        var msgs = document.querySelectorAll(${JSON.stringify(messagesSelector)});
+        if (msgs.length <= ${initialCount}) return null;
+        var last = msgs[msgs.length - 1];
+        var contentEl = last.querySelector(${JSON.stringify(contentSelector)});
+        return contentEl ? contentEl.textContent : last.textContent;
+      })()`,
+      returnByValue: true,
+    });
+    const text = result.result?.value;
+    if (text && typeof text === "string" && text.trim().length > 0) {
+      return text.trim();
+    }
+  }
+  return undefined;
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { CDPConnection } from "../../cdp/connection.js";
 import { withTab } from "../../cdp/helpers.js";
+import { ToolError } from "../../utils/errors.js";
 
 export const GetPageContentInput = z.object({
   tabId: z.string().optional(),
@@ -52,6 +53,12 @@ export async function getPageContentHandler(
       returnByValue: true,
       awaitPromise: true,
     });
+    if (result.exceptionDetails) {
+      throw new ToolError(
+        "get_page_content",
+        result.exceptionDetails.exception?.description ?? "Content extraction failed"
+      );
+    }
 
     let content: string = result.result?.value ?? "";
     const truncated = content.length > args.maxLength;

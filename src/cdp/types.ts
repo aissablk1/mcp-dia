@@ -2,7 +2,6 @@ export interface Tab {
   id: string;
   url: string;
   title: string;
-  active: boolean;
 }
 
 export interface Cookie {
@@ -43,7 +42,7 @@ export interface MemoryResult {
 }
 
 export interface TabContext {
-  tabId: string;
+  tabId?: string;
   url: string;
   title: string;
   summary?: string;

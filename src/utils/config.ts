@@ -6,12 +6,25 @@ export interface Config {
   reconnectMax: number;
 }
 
+const LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  if (value === undefined) return fallback;
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
 export function loadConfig(): Config {
+  const rawLevel = process.env.DIA_LOG_LEVEL;
+  const logLevel = (LOG_LEVELS as readonly string[]).includes(rawLevel ?? "")
+    ? (rawLevel as Config["logLevel"])
+    : "info";
+
   return {
     cdpHost: process.env.DIA_CDP_HOST ?? "localhost",
-    cdpPort: parseInt(process.env.DIA_CDP_PORT ?? "9222", 10),
+    cdpPort: parsePositiveInt(process.env.DIA_CDP_PORT, 9222),
     aiBridge: process.env.DIA_AI_BRIDGE !== "false",
-    logLevel: (process.env.DIA_LOG_LEVEL as Config["logLevel"]) ?? "info",
-    reconnectMax: parseInt(process.env.DIA_RECONNECT_MAX ?? "30000", 10),
+    logLevel,
+    reconnectMax: parsePositiveInt(process.env.DIA_RECONNECT_MAX, 30000),
   };
 }

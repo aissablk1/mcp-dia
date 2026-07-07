@@ -21,8 +21,8 @@ afterEach(() => {
 describe("listTabsHandler", () => {
   it("returns list of tabs from CDP", async () => {
     const result = await listTabsHandler(cdp, {});
-    expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({ id: "tab-1", url: "https://example.com" });
+    expect(result.tabs).toHaveLength(2);
+    expect(result.tabs[0]).toMatchObject({ id: "tab-1", url: "https://example.com" });
   });
 });
 

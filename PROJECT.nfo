@@ -4,7 +4,7 @@
     ║║║║  ╠═╝    ║║║╠═╣
     ╩ ╩╚═╝╩    ═╩╝╩╩ ╩
 
-              mcp-dia  ·  v0.1.0
+              mcp-dia  ·  v0.2.0
 
 ================================================================================
 
@@ -12,12 +12,12 @@
   Tagline ............ MCP server for Dia Browser via Chrome DevTools Protocol
   Author ............. Aïssa BELKOUSSA
   Contact ............ contact@aissabelkoussa.fr
-  Repository ......... https://github.com/aissabelkoussa/mcp-dia
+  Repository ......... https://github.com/aissablk1/mcp-dia
   License ............ MIT
   Created ............ 2026-05-26
-  Updated ............ 2026-05-27
-  Version ............ 0.1.0
-  Status ............. alpha
+  Updated ............ 2026-07-08
+  Version ............ 0.2.0
+  Status ............. beta
 
 ────────────────────────────────────────────────────────────────────────────────
   ▓▓ DESCRIPTION ▓▓

@@ -18,9 +18,11 @@ export interface MockCDPClient {
   };
   Network: {
     enable: ReturnType<typeof vi.fn>;
+    disable: ReturnType<typeof vi.fn>;
     getCookies: ReturnType<typeof vi.fn>;
     setCookie: ReturnType<typeof vi.fn>;
     on: ReturnType<typeof vi.fn>;
+    removeListener: ReturnType<typeof vi.fn>;
   };
   Target: {
     createTarget: ReturnType<typeof vi.fn>;
@@ -32,7 +34,9 @@ export interface MockCDPClient {
   };
   Fetch: {
     enable: ReturnType<typeof vi.fn>;
+    disable: ReturnType<typeof vi.fn>;
     on: ReturnType<typeof vi.fn>;
+    removeListener: ReturnType<typeof vi.fn>;
     failRequest: ReturnType<typeof vi.fn>;
     continueRequest: ReturnType<typeof vi.fn>;
   };
@@ -57,9 +61,11 @@ export function createMockClient(): MockCDPClient {
     },
     Network: {
       enable: vi.fn().mockResolvedValue(undefined),
+      disable: vi.fn().mockResolvedValue(undefined),
       getCookies: vi.fn().mockResolvedValue({ cookies: [] }),
       setCookie: vi.fn().mockResolvedValue({ success: true }),
       on: vi.fn(),
+      removeListener: vi.fn(),
     },
     Target: {
       createTarget: vi.fn().mockResolvedValue({ targetId: "new-tab-123" }),
@@ -71,7 +77,9 @@ export function createMockClient(): MockCDPClient {
     },
     Fetch: {
       enable: vi.fn().mockResolvedValue(undefined),
+      disable: vi.fn().mockResolvedValue(undefined),
       on: vi.fn(),
+      removeListener: vi.fn(),
       failRequest: vi.fn().mockResolvedValue(undefined),
       continueRequest: vi.fn().mockResolvedValue(undefined),
     },
@@ -84,8 +92,8 @@ export function createMockCDP(client: MockCDPClient): CDPConnection {
   vi.spyOn(cdp, "getActiveTab").mockResolvedValue(client as any);
   vi.spyOn(cdp, "attachToTab").mockResolvedValue(client as any);
   vi.spyOn(cdp, "listTargets").mockResolvedValue([
-    { id: "tab-1", url: "https://example.com", title: "Example", active: true },
-    { id: "tab-2", url: "https://google.com", title: "Google", active: false },
+    { id: "tab-1", url: "https://example.com", title: "Example" },
+    { id: "tab-2", url: "https://google.com", title: "Google" },
   ]);
   return cdp;
 }

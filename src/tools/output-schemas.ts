@@ -4,7 +4,6 @@ const TabSchema = z.object({
   id: z.string(),
   url: z.string(),
   title: z.string(),
-  active: z.boolean(),
 });
 
 const CookieSchema = z.object({
@@ -73,7 +72,7 @@ export const outputSchemas: Record<string, z.ZodTypeAny> = {
   dia_trigger_skill: z.object({ response: z.string().optional() }),
   dia_search_memory: z.object({ results: z.array(MemoryResultSchema) }),
   dia_get_tab_context: z.object({
-    tabId: z.string(),
+    tabId: z.string().optional(),
     url: z.string(),
     title: z.string(),
     summary: z.string().optional(),
