@@ -41,6 +41,8 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current page"*.
 
+See **[docs/DEMO.md](docs/DEMO.md)** for a full scripted walkthrough.
+
 ## Tools
 
 ### Core (stable)
