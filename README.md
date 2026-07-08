@@ -1,5 +1,9 @@
 # mcp-dia
 
+[![CI](https://github.com/aissablk1/mcp-dia/actions/workflows/ci.yml/badge.svg)](https://github.com/aissablk1/mcp-dia/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/mcp-dia.svg)](https://www.npmjs.com/package/mcp-dia)
+[![license](https://img.shields.io/npm/l/mcp-dia.svg)](./LICENSE)
+
 MCP server for **Dia Browser** — control tabs, automate pages, and interact with Dia's built-in AI via Chrome DevTools Protocol.
 
 ## Features
@@ -62,7 +66,7 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 | `click_element` | Click by CSS/XPath selector |
 | `fill_input` | Fill form fields |
 | `wait_for_selector` | Wait for DOM element |
-| `evaluate_js` | Run JavaScript (with timeout) |
+| `evaluate_js` | Run JavaScript (with timeout; removable via `DIA_ALLOW_EVAL=false`) |
 | `get_cookies` | Read cookies (HttpOnly values redacted by default) |
 | `set_cookie` | Write cookies |
 | `intercept_network` | Log/block requests for a bounded window |
@@ -85,6 +89,7 @@ Ask Claude: *"List my open tabs in Dia"* or *"Take a screenshot of the current p
 | `DIA_CDP_PORT` | `9222` | CDP port |
 | `DIA_CDP_HOST` | `localhost` | CDP host |
 | `DIA_AI_BRIDGE` | `true` | Enable AI Bridge tools (`false` to disable) |
+| `DIA_ALLOW_EVAL` | `true` | Keep the `evaluate_js` tool (`false` removes it entirely) |
 | `DIA_LOG_LEVEL` | `info` | Log level (`debug`/`info`/`warn`/`error`) |
 | `DIA_RECONNECT_MAX` | `30000` | Max reconnect backoff delay (ms) |
 
@@ -95,7 +100,7 @@ Invalid values fall back to their default rather than failing silently.
 - **URL allow-list** — `navigate` and `open_tab` accept only `http(s)` URLs and `about:blank`. Schemes such as `file:`, `javascript:`, `data:`, `chrome:` and `view-source:` are rejected, preventing local-file disclosure and access to internal browser pages — including when the agent is steered by indirect prompt injection from page content it has read.
 - **HttpOnly cookies redacted** — `get_cookies` redacts HttpOnly cookie values by default (CDP bypasses HttpOnly). Pass `revealValues: true` to opt in when you genuinely need them.
 - **Loopback by default, not enforced** — the CDP connection defaults to `localhost`. `DIA_CDP_HOST` can override it; only point it at a trusted, private host. The debug port grants full control of the browser session.
-- `evaluate_js` executes arbitrary JavaScript in the page context and is annotated `destructive` — use with trusted models only.
+- `evaluate_js` executes arbitrary JavaScript in the page context and is annotated `destructive` — use with trusted models only. It is enabled by default; set `DIA_ALLOW_EVAL=false` to remove it entirely for high-security deployments.
 - `click_element` and `dia_trigger_skill` are annotated `destructive` because the targeted action is arbitrary and may be irreversible.
 - Cookies and credentials are never written to logs.
 
@@ -104,6 +109,14 @@ Invalid values fall back to their default rather than failing silently.
 - macOS
 - Dia Browser v0.38.0+
 - Node.js 20+
+
+### Compatibility
+
+The **Core** and **Advanced** layers use standard Chrome DevTools Protocol and are
+stable across Dia updates. The **AI Bridge** layer automates Dia's own UI through
+versioned DOM selectors (`src/tools/ai-bridge/selectors.json`, key `default`) and
+may break when Dia's interface changes — disable it with `DIA_AI_BRIDGE=false` if it
+drifts. Pin the Dia version you validate the AI Bridge against.
 
 ## License
 

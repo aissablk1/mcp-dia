@@ -4,6 +4,19 @@ All notable changes to `mcp-dia` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-07-08
+
+### Added
+- **`DIA_ALLOW_EVAL` opt-out flag.** `evaluate_js` runs arbitrary JavaScript and
+  stays enabled by default, but high-security deployments can now remove it
+  entirely with `DIA_ALLOW_EVAL=false` (it is dropped from the tool list, mirroring
+  the AI Bridge gating).
+
+### Docs
+- README: CI + npm badges, `DIA_ALLOW_EVAL` documentation, and a **Compatibility**
+  note on the AI Bridge's dependency on Dia's UI selectors.
+- GitHub repository topics added for discoverability.
+
 ## [0.2.0] — 2026-07-08
 
 Hardening release: fixes MCP protocol-contract bugs, closes security gaps

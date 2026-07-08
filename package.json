@@ -1,6 +1,6 @@
 {
   "name": "mcp-dia",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server for Dia Browser — control tabs, automate pages, and interact with Dia's built-in AI via Chrome DevTools Protocol",
   "author": "Aïssa BELKOUSSA",
   "license": "MIT",
