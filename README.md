@@ -109,7 +109,7 @@ Invalid values fall back to their default rather than failing silently.
 ## Requirements
 
 - macOS
-- Dia Browser v0.38.0+
+- Dia Browser (developed against v1.38.0)
 - Node.js 20+
 
 ### Compatibility
@@ -118,7 +118,8 @@ The **Core** and **Advanced** layers use standard Chrome DevTools Protocol and a
 stable across Dia updates. The **AI Bridge** layer automates Dia's own UI through
 versioned DOM selectors (`src/tools/ai-bridge/selectors.json`, key `default`) and
 may break when Dia's interface changes — disable it with `DIA_AI_BRIDGE=false` if it
-drifts. Pin the Dia version you validate the AI Bridge against.
+drifts. Pin the Dia version you validate the AI Bridge against. This project was
+developed against **Dia v1.38.0** (macOS).
 
 ## License
 
