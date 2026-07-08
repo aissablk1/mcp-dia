@@ -46,7 +46,10 @@ async function main(): Promise<void> {
 
   const toolCount = buildTools(cdp, config).length;
   const aiBridgeStatus = config.aiBridge ? "enabled" : "disabled";
-  logger.info(`mcp-dia ready — ${toolCount} tools loaded (AI Bridge: ${aiBridgeStatus})`);
+  const evalStatus = config.allowEval ? "enabled" : "disabled";
+  logger.info(
+    `mcp-dia ready — ${toolCount} tools loaded (AI Bridge: ${aiBridgeStatus}, evaluate_js: ${evalStatus})`
+  );
 
   // Guard against stray unhandled rejections from async CDP event callbacks
   process.on("unhandledRejection", (reason) => {

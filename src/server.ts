@@ -22,7 +22,7 @@ import * as Skills from "./tools/ai-bridge/skills.js";
 import * as Memory from "./tools/ai-bridge/memory.js";
 import { outputSchemas } from "./tools/output-schemas.js";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 
 export interface ToolDef {
   name: string;
@@ -322,7 +322,14 @@ export function buildTools(cdp: CDPConnection, config: Config): ToolDef[] {
     }),
   ];
 
-  return [...coreTools, ...advancedTools, ...(config.aiBridge ? aiBridgeTools : [])];
+  // `evaluate_js` runs arbitrary JS; it stays enabled by default but can be
+  // locked out entirely with DIA_ALLOW_EVAL=false for high-security deployments.
+  const advanced =
+    config.allowEval === false
+      ? advancedTools.filter((t) => t.name !== "evaluate_js")
+      : advancedTools;
+
+  return [...coreTools, ...advanced, ...(config.aiBridge ? aiBridgeTools : [])];
 }
 
 export interface CallToolResult {

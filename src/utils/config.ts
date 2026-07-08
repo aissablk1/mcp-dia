@@ -2,6 +2,7 @@ export interface Config {
   cdpHost: string;
   cdpPort: number;
   aiBridge: boolean;
+  allowEval: boolean;
   logLevel: "debug" | "info" | "warn" | "error";
   reconnectMax: number;
 }
@@ -24,6 +25,7 @@ export function loadConfig(): Config {
     cdpHost: process.env.DIA_CDP_HOST ?? "localhost",
     cdpPort: parsePositiveInt(process.env.DIA_CDP_PORT, 9222),
     aiBridge: process.env.DIA_AI_BRIDGE !== "false",
+    allowEval: process.env.DIA_ALLOW_EVAL !== "false",
     logLevel,
     reconnectMax: parsePositiveInt(process.env.DIA_RECONNECT_MAX, 30000),
   };

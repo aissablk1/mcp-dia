@@ -8,6 +8,7 @@ const baseConfig: Config = {
   cdpHost: "localhost",
   cdpPort: 9222,
   aiBridge: true,
+  allowEval: true,
   logLevel: "error",
   reconnectMax: 1000,
 };
@@ -32,6 +33,12 @@ describe("buildTools", () => {
 
   it("exposes 18 tools when AI Bridge is disabled", () => {
     expect(buildTools(cdp, { ...baseConfig, aiBridge: false })).toHaveLength(18);
+  });
+
+  it("excludes evaluate_js when DIA_ALLOW_EVAL is off", () => {
+    const tools = buildTools(cdp, { ...baseConfig, allowEval: false });
+    expect(tools.find((t) => t.name === "evaluate_js")).toBeUndefined();
+    expect(tools).toHaveLength(23);
   });
 
   it("marks arbitrary-action tools as destructive", () => {
@@ -77,6 +84,12 @@ describe("callTool — error surface", () => {
     const r = await callTool(tools, "navigate", { url: "file:///etc/passwd" });
     expect(r.isError).toBe(true);
     expect(r.content[0].text).toContain("Invalid arguments");
+  });
+
+  it("returns isError for evaluate_js when it is disabled by config", async () => {
+    const tools = buildTools(cdp, { ...baseConfig, allowEval: false });
+    const r = await callTool(tools, "evaluate_js", { expression: "1+1" });
+    expect(r.isError).toBe(true);
   });
 
   it("maps a handler ToolError to an isError result", async () => {

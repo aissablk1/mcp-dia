@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { loadConfig } from "../../src/utils/config.js";
 
-const KEYS = ["DIA_CDP_HOST", "DIA_CDP_PORT", "DIA_AI_BRIDGE", "DIA_LOG_LEVEL", "DIA_RECONNECT_MAX"];
+const KEYS = ["DIA_CDP_HOST", "DIA_CDP_PORT", "DIA_AI_BRIDGE", "DIA_ALLOW_EVAL", "DIA_LOG_LEVEL", "DIA_RECONNECT_MAX"];
 
 function clearEnv() {
   for (const k of KEYS) delete process.env[k];
@@ -18,6 +18,7 @@ describe("loadConfig", () => {
     expect(c.cdpHost).toBe("localhost");
     expect(c.cdpPort).toBe(9222);
     expect(c.aiBridge).toBe(true);
+    expect(c.allowEval).toBe(true);
     expect(c.logLevel).toBe("info");
     expect(c.reconnectMax).toBe(30000);
   });
@@ -46,5 +47,13 @@ describe("loadConfig", () => {
     expect(loadConfig().aiBridge).toBe(false);
     process.env.DIA_AI_BRIDGE = "0";
     expect(loadConfig().aiBridge).toBe(true);
+  });
+
+  it("disables evaluate_js only when DIA_ALLOW_EVAL is exactly 'false'", () => {
+    clearEnv();
+    process.env.DIA_ALLOW_EVAL = "false";
+    expect(loadConfig().allowEval).toBe(false);
+    process.env.DIA_ALLOW_EVAL = "true";
+    expect(loadConfig().allowEval).toBe(true);
   });
 });
