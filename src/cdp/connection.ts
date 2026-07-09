@@ -45,11 +45,12 @@ export class CDPConnection extends EventEmitter {
         this.handleDisconnect().catch(() => {});
       });
       this.emit("connected");
-    } catch {
+    } catch (err) {
       throw new CDPError(
         `Failed to connect to Dia at ${this.config.host}:${this.config.port}. ` +
           `Launch Dia with: open -a "Dia" --args --remote-debugging-port=${this.config.port}`,
-        "CONNECTION_FAILED"
+        "CONNECTION_FAILED",
+        { cause: err }
       );
     }
   }
