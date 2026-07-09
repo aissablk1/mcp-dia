@@ -1,5 +1,11 @@
 # mcp-dia Implementation Plan
 
+> ✅ **Plan d'implémentation historique (2026-05-26) — TERMINÉ.** Toutes les tâches et *Steps* `- [ ]`
+> ci-dessous ont été **réalisés** dans l'implémentation livrée (v0.3.0, dépôt public). Ces cases **ne
+> sont pas** des tâches en attente — c'est un enregistrement historique. Référence faisant autorité :
+> `CHANGELOG.md`, `README.md`, `docs/HANDOFF.md` + le code. Restent hors-code : **publication npm** en
+> attente d'un token, et un **GIF de démo** à enregistrer (voir `docs/HANDOFF.md`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a production-quality MCP server for Dia Browser with 24 tools across 3 layers (Core, Advanced, AI Bridge), published on npm as `mcp-dia`.

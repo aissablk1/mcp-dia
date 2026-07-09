@@ -6,6 +6,16 @@
 
 ---
 
+> ✅ **Document de conception historique (2026-05-26) — implémentation LIVRÉE (v0.3.0).**
+> Snapshot d'intention ; l'état réel et faisant autorité est **`CHANGELOG.md`** / **`README.md`** /
+> **`docs/HANDOFF.md`** + le code. Les cases `- [ ]` ci-dessous **ne sont pas** des tâches en attente :
+> le serveur MCP, les 24 outils, l'auto-reconnexion, l'AI Bridge feature-flaggé et les tests Core/Advanced
+> sont **réalisés**. Nuances (§29) : **publication npm** prête et automatisée mais **en attente d'un token**
+> (pas encore publiée) ; **GIF de démo** README à enregistrer ; compatibilité réelle **Dia v1.38.0**
+> (et non « v0.38.0+ »).
+
+---
+
 ## 1. Objectif
 
 Construire un serveur MCP (Model Context Protocol) de référence pour **Dia Browser** (The Browser Company), publié en open-source sur npm. Le serveur expose ~24 outils répartis en 3 couches :
