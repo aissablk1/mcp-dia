@@ -82,7 +82,8 @@ export async function waitForNewMessage(
 ): Promise<string | undefined> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 1000));
+    // Cap the poll interval so a short timeout is not overshot by a full second.
+    await new Promise((r) => setTimeout(r, Math.min(1000, deadline - Date.now())));
     const result = await client.Runtime.evaluate({
       expression: `(function(){
         var msgs = document.querySelectorAll(${JSON.stringify(messagesSelector)});
