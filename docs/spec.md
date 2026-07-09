@@ -6,6 +6,25 @@
 
 ---
 
+> ⚠️ **Document de conception historique (2026-05-26) — partiellement dépassé.**
+> Il capture l'**intention de design d'origine**, pas l'API actuelle. Pour l'état réel et
+> faisant autorité, voir **`CHANGELOG.md`**, **`README.md`** et **`docs/HANDOFF.md`** + le code.
+> Divergences notables depuis l'implémentation livrée (v0.2.0 / v0.3.0) :
+> - Les outils renvoyant des collections **encapsulent** leur résultat dans un objet conforme à
+>   l'`outputSchema` MCP (`{ tabs: [...] }`, `{ cookies: [...] }`, `{ requests: [...] }`,
+>   `{ messages: [...] }`, `{ skills: [...] }`, `{ results: [...] }`) — **pas** un tableau nu.
+> - `list_tabs` **n'expose plus** de champ `active` (CDP ne le fournit pas de façon fiable).
+> - Flag **`DIA_ALLOW_EVAL`** (retire l'outil `evaluate_js`) — absent de la table §7 ci-dessous.
+> - Durcissements sécurité livrés au-delà de la §10 : **allow-list de schémas d'URL**
+>   (`navigate`/`open_tab` : http(s)/about:blank), **redaction des cookies HttpOnly** par défaut,
+>   annotations **`destructive`** honnêtes, timeouts par outil.
+> - Le message d'erreur AI Bridge exact de la §5 (« Dia UI element not found… ») est
+>   **illustratif** ; l'implémentation lève des `AIBridgeError` au message contextuel.
+> - Compatibilité : développé contre **Dia v1.38.0** (et non « v0.38.0+ »).
+> - Build via **`tsc`** (pas `tsup`) ; `dia_get_tab_context` vit dans `memory.ts` (pas de `context.ts`).
+
+---
+
 ## 1. Objectif
 
 Construire un serveur MCP (Model Context Protocol) de référence pour **Dia Browser** (The Browser Company), publié en open-source sur npm. Le serveur expose ~24 outils répartis en 3 couches :
